@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://nteste05.github.io/trekbinder/sitemap.xml
