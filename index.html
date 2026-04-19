@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <link rel="canonical" href="https://nteste05.github.io/trekbinder/" />
+    <link rel="icon" type="image/jpeg" href="trekbinder-favicon.jpeg" sizes="32x32">
+    <link rel="apple-touch-icon" sizes="180x180" href="trekbinder-favicon.jpeg">
+    <link rel="manifest" href="manifest.json">
+    
+    <title>TrekBinder: Aplikasi Layering mix Audio Browser-Based Terbaik</title>
+    <meta name="description" content="Gabungkan vokal & instrumen dengan TrekBinder. Aplikasi layering audio gratis di browser, tanpa download, & 100% privat karena file tidak diupload ke server.">
+    <meta name="keywords" content="Layering audio online, Edit audio browser, Penggabung musik, TrekBinder, Audio mixer web">
+    <meta name="robots" content="index, follow">
+    
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://nteste05.github.io/trekbinder">
+    <meta property="og:title" content="TrekBinder: Aplikasi Layering mix Audio Browser-Based Terbaik">
+    <meta property="og:description" content="Gabungkan vokal & instrumen dengan TrekBinder. Aplikasi layering audio gratis di browser, tanpa download, & 100% privat karena file tidak diupload ke server.">
+    <meta property="og:image" content="https://raw.githubusercontent.com/nteste05/trekbinder/refs/heads/main/trekbinder-thumb.jpeg">
+    
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://nteste05.github.io/trekbinder">
+    <meta property="twitter:title" content="TrekBinder: Aplikasi Layering mix Audio Browser-Based Terbaik">
+    <meta property="twitter:description" content="Gabungkan vokal & instrumen dengan TrekBinder. Aplikasi layering audio gratis di browser, tanpa download, & 100% privat karena file tidak diupload ke server.">
+    <meta property="twitter:image" content="https://raw.githubusercontent.com/nteste05/trekbinder/refs/heads/main/trekbinder-thumb.jpeg">
+    
+    <script src="lame.min.js"></script>
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --secondary: #10b981;
+            --accent: #f43f5e;
+            --bg: #0f172a;
+            --card: #1e293b;
+            --text: #f8fafc;
+        }
+        * {box-sizing: border-box;}
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 0 15px;
+            display: flex;
+            flex-direction: column;
+            align-content: center;
+            min-height: 100vh;
+        }
+        .app-container {
+            background: var(--card);
+            max-width: 600px;
+            padding: 1rem;
+            border-radius: 1.5rem;
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
+            margin-bottom: 30px;
+        }
+        .track-card {
+            background: #334155;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 10px;
+            border-left: 5px solid #3498db;
+        }
+        canvas {
+            background: #0f172a;
+            width: 100%;
+            height: 60px;
+            border-radius: 0.5rem;
+            margin: 10px 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+        }
+        .controls {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        .controls2 {
+            display: flex;
+            gap: 10px;
+        }
+        button {
+            width: 100%;
+            padding: 20px 10px;
+            border: none;
+            border-radius: 0.75rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.2s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn-preview { background: #3498db; color: white; }
+        .btn-preview:hover { background: #4498db; }
+        .btn-proses { background: var(--primary); color: white; }
+        .btn-proses:hover { opacity: 0.9; }
+        button:disabled { background: #555; cursor: not-allowed; opacity: 0.6; }
+        input[type="number"] {
+            width: 30%;
+            background: #0f172a;
+            border: 1px solid #334155;
+            color: white;
+            padding: 0.7rem;
+            border-radius: 0.5rem;
+            outline: none;
+        }
+        input[type="file"] {
+            width: 80%;
+            color: white;
+            outline: none;
+            border: 2px dashed #475569;
+            border-radius: 1rem;
+            padding: 10px;
+            text-align: center;
+        }
+        @media screen and (min-width: 769px) {
+            body {width: 100%; align-items: center}
+            .app-container { padding: 1.2rem; }
+        }
+        
+        .navbar {
+            padding: 20px 0;
+            display: flex;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .menu-btn {
+            background: none;
+            border: none;
+            color: #bbb;
+            font-size: 24px;
+            cursor: pointer;
+            margin: 0 20px 0 0;
+        }
+
+        header h1 {
+            font-size: 16px;
+            margin:0;
+        }
+
+        .sidebar {
+            height: 100%;
+            width: 0;
+            position: fixed;
+            z-index: 2000;
+            top: 0;
+            left: 0;
+            background-color: var(--bg);
+            overflow-x: hidden;
+            transition: 0.3s;
+            padding-top: 10px;
+        }
+
+        .sidebar a {
+            padding: 15px 30px;
+            text-decoration: none;
+            font-size: 1.1rem;
+            color: #ccc;
+            display: block;
+            transition: 0.2s;
+            border-bottom: 1px solid #bbb;
+        }
+
+        .sidebar a:hover {
+            color: #818cf8;
+            background-color: var(--card);
+        }
+
+        .sidebar .close-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 36px;
+            color: white;
+            cursor: pointer;
+        }
+
+        .overlaynav {
+            display: none;
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            background: rgba(0,0,0,0.7);
+            z-index: 1500;
+        }
+        
+        .visually-hidden {
+            position: absolute !important;
+            width: 1px !important;
+            height: 1px !important;
+            padding: 0 !important;
+            margin: -1px !important;
+            overflow: hidden !important;
+            clip: rect(0, 0, 0, 0) !important;
+            white-space: nowrap !important;
+            border: 0 !important;
+        }
+        footer {
+            font-size: 12px;
+            padding: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div id="mySidebar" class="sidebar">
+        <span class="close-btn" onclick="closeNav()">&times;</span>
+        <a href="https://nteste05.github.io/gemii/" onclick="closeNav()">👽 Lainnya</a>
+    </div>
+    <div id="overlaynav" class="overlaynav" onclick="closeNav()"></div>
+    <nav class="navbar">
+        <div class="menu-btn" onclick="openNav()">&#9776;</div>
+        <header><h1>TrekBinder: Aplikasi Layering mix Audio</h1></header>
+    </nav>
+<div class="app-container">
+    <p>*) File tidak dikirim ke server. Semua proses terjadi di browser Anda.</p>
+    <small>Jika delay pada Track 1 bermasalah, tambahkan 0.5</small>
+    <canvas id="visualizer"></canvas>
+    <button style="margin-bottom: 20px">🎛 Tambah Track</button>
+    <div class="track-card">
+        <label>Track 1:</label>
+        <input type="file" id="file1" accept="audio/*,.mp3,.wav,.webm">
+        <br><br>
+        <label>Delay:</label>
+        <input type="number" id="delay1" value="0" min="0" step="0.1">
+    </div>
+    <div class="track-card" style="border-left-color: #e74c3c;">
+        <label>Track 2:</label>
+        <input type="file" id="file2" accept="audio/*,.mp3,.wav,.webm">
+        <br><br>
+        <label>Delay:</label>
+        <input type="number" id="delay2" value="0" min="0" step="0.1">
+    </div>
+    <div class="controls">
+        <button class="btn-preview" onclick="togglePreview()" id="playBtn">▶️ Putar Preview</button>
+        <div class="controls2">
+            <button class="btn-proses" id="btnProcess" style="flex:1; ">Proses ke (WebM)</button>
+            <button class="btn-proses" id="btnProcess" style="flex:1; background: #8b5cf6;">Proses ke (MP3)</button>
+        </div>
+        <button id="btnDownload" disabled>💾 Download Hasil</button>
+    </div>
+    <p id="status" style="text-align: center; color: #aaa; margin-top: 10px;"></p>
+</div>
+
+<script>
+    let audioCtx, analyser, recorder, chunks;
+    let trackCount = 2;
+    const maxTracks = 5;
+    let isCancelled = false;
+    
+    document.querySelector('button:not([class])').onclick = () => {
+        if (trackCount >= maxTracks) return alert("Maksimal 5 track!");
+        trackCount++;
+        const container = document.querySelector('.app-container');
+        const btnControls = document.querySelector('.controls');
+        const newTrack = document.createElement('div');
+        newTrack.className = 'track-card';
+        newTrack.style.borderLeftColor = trackCount % 2 === 0 ? '#e74c3c' : '#3498db';
+        newTrack.innerHTML = `
+            <label>Track ${trackCount}:</label>
+            <input type="file" id="file${trackCount}" accept="audio/*,.mp3,.wav,.webm">
+            <br><br>
+                <label>Delay:</label>
+                <input type="number" id="delay${trackCount}" value="0" min="0" step="0.1">
+                <div style = "display:flex; flex-direction: column; margin-top:10px;">
+                <label>Vol:</label>
+                <input type="range" id="vol${trackCount}" min="0" max="1" step="0.01" value="0.8">
+                <label>Pan:</label>
+                <input type="range" id="pan${trackCount}" min="-1" max="1" step="0.1" value="0"></div>
+        `;
+        container.insertBefore(newTrack, btnControls);
+    };
+    
+    document.querySelectorAll('.track-card').forEach((card, index) => {
+        const id = index + 1;
+        if(!document.getElementById(`vol${id}`) || !document.getElementById(`pan${id}`)) {
+            const div = document.createElement('div');
+            div.style = "display:flex; flex-direction: column; margin-top:10px;";
+            div.innerHTML = `<label>Vol:</label><input type="range" id="vol${id}" min="0" max="1" step="0.01" value="0.8">
+            <label>Pan:</label>
+            <input type="range" id="pan${id}" min="-1" max="1" step="0.1" value="0">`;
+            
+            card.appendChild(div);
+        }
+    });
+    
+    async function togglePreview() {
+        const playBtn = document.getElementById('playBtn');
+        
+        if (audioCtx && audioCtx.state !== 'closed') {
+            await audioCtx.close();
+            audioCtx = null;
+            playBtn.innerText = "▶️ Putar Preview";
+            document.getElementById('status').innerText = "Preview Berhenti";
+            return;
+        }
+        
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        if (audioCtx.state === 'suspended') {
+        await audioCtx.resume();
+        }
+        
+        analyser = audioCtx.createAnalyser();
+        analyser.connect(audioCtx.destination);
+        setupVisualizer();
+        
+        let maxDur = 0;
+        let hasFile = false;
+        let longestSource = null;
+
+        for (let i = 1; i <= trackCount; i++) {
+            const f = document.getElementById(`file${i}`).files[0];
+            if (f) {
+                hasFile = true;
+                const buf = await f.arrayBuffer();
+                const audioBuf = await audioCtx.decodeAudioData(buf);
+                const source = audioCtx.createBufferSource();
+                const gainNode = audioCtx.createGain();
+                const panner = audioCtx.createStereoPanner();
+                
+                source.buffer = audioBuf;
+                gainNode.gain.value = document.getElementById(`vol${i}`).value;
+                panner.pan.value = parseFloat(document.getElementById(`pan${i}`).value);
+                
+                source.connect(gainNode);
+                gainNode.connect(panner);
+                panner.connect(analyser);
+                
+                const delay = parseFloat(document.getElementById(`delay${i}`).value) || 0;
+                source.start(audioCtx.currentTime + delay);
+                
+                const totalDur = delay + audioBuf.duration;
+                if (totalDur > maxDur) {
+                    maxDur = totalDur;
+                    longestSource = source;
+                }
+            }
+        }
+        if (hasFile && longestSource) {
+            playBtn.innerText = "⏹️ Berhenti Preview";
+            document.getElementById('status').innerText = "Preview berjalan";
+            longestSource.onended = () => {
+                if (audioCtx && audioCtx.state !== 'closed') {
+                    audioCtx.close();
+                    audioCtx = null;
+                    playBtn.innerText = "▶️ Putar Preview";
+                    document.getElementById('status').innerText = "Preview Selesai";
+                }
+            };
+        } else {
+            await audioCtx.close();
+            audioCtx = null;
+            document.getElementById('status').innerText = "Pilih file dulu!";
+        }
+    }
+    
+    const btnWebM = document.querySelectorAll('.btn-proses')[0];
+    btnWebM.onclick = async () => {
+        isCancelled = false;
+        if (audioCtx) await audioCtx.close();
+        audioCtx = new AudioContext();
+        const dest = audioCtx.createMediaStreamDestination();
+        chunks = [];
+        analyser = audioCtx.createAnalyser();
+        setupVisualizer();
+        
+        recorder = new MediaRecorder(dest.stream, { mimeType: 'audio/webm' });
+        recorder.ondataavailable = (e) => chunks.push(e.data);
+        recorder.onstop = () => {
+            if(!isCancelled) setupDownload(new Blob(chunks, { type: 'audio/webm' }), 'hasilmixing_trekbindernteste05.webm');
+        };
+        
+        let maxDur = 0;
+        for (let i = 1; i <= trackCount; i++) {
+            const f = document.getElementById(`file${i}`).files[0];
+            if (f) {
+                const buf = await f.arrayBuffer();
+                const audioBuf = await audioCtx.decodeAudioData(buf);
+                const source = audioCtx.createBufferSource();
+                const gainNode = audioCtx.createGain();
+                const panner = audioCtx.createStereoPanner();
+                const d = parseFloat(document.getElementById(`delay${i}`).value) || 0;
+                
+                source.buffer = audioBuf;
+                gainNode.gain.value = document.getElementById(`vol${i}`).value;
+                panner.pan.value = parseFloat(document.getElementById(`pan${i}`).value);
+                
+                source.connect(gainNode);
+                gainNode.connect(panner);
+                panner.connect(dest);
+                panner.connect(analyser);
+                analyser.connect(audioCtx.destination);
+                source.start(audioCtx.currentTime + d);
+                maxDur = Math.max(maxDur, d + audioBuf.duration);
+            }
+        }
+        showCancelUI("Merekam WebM...");
+        recorder.start();
+        const tOut = setTimeout(() => { if(!isCancelled) recorder.stop(); }, maxDur * 1000 + 500);
+        window.cancelProcess = () => { isCancelled = true; recorder.stop(); clearTimeout(tOut); audioCtx.close(); resetUI("Dibatalkan."); };
+    };
+    
+    const btnMP3 = document.querySelectorAll('.btn-proses')[1];
+    btnMP3.onclick = async () => {
+        if (typeof lamejs === 'undefined') return alert("Lame.min.js tidak terload!");
+        isCancelled = false;
+        showCancelUI("Rendering MP3...");
+        
+        try {
+            const SAMPLERATE = 44100;
+            const tempCtx = new AudioContext({ sampleRate: SAMPLERATE });
+            const tracks = [];
+            let maxDur = 0;
+            
+            for (let i = 1; i <= trackCount; i++) {
+                const fileInput = document.getElementById(`file${i}`);
+                const f = fileInput.files[0];
+                
+                if (f) {
+                    const d = parseFloat(document.getElementById(`delay${i}`).value) || 0;
+                    const v = parseFloat(document.getElementById(`vol${i}`).value);
+                    const p = parseFloat(document.getElementById(`pan${i}`).value);
+                    const buf = await f.arrayBuffer();
+                    const audioBuf = await tempCtx.decodeAudioData(buf);
+                    
+                    tracks.push({
+                        buffer: audioBuf,
+                        delay: d,
+                        volume: v,
+                        pan: p
+                    });
+                    if (d + audioBuf.duration > maxDur) {
+                        maxDur = d + audioBuf.duration;
+                    }
+                }
+            }
+            
+            if (tracks.length === 0) return resetUI("Tidak ada file untuk diproses.");
+            
+            const offCtx = new OfflineAudioContext(2, Math.ceil(SAMPLERATE * maxDur), SAMPLERATE);
+            
+            tracks.forEach(t => {
+                const s = offCtx.createBufferSource();
+                const g = offCtx.createGain();
+                const panNode = offCtx.createStereoPanner();
+                s.buffer = t.buffer;
+                g.gain.value = t.volume;
+                panNode.pan.value = t.pan;
+                s.connect(g);
+                g.connect(panNode);
+                panNode.connect(offCtx.destination);
+                s.start(0 + t.delay);
+            });
+            
+            const renderedBuffer = await offCtx.startRendering();
+            if (isCancelled) return;
+            
+            const mp3encoder = new lamejs.Mp3Encoder(2, 44100, 128);
+            const left = renderedBuffer.getChannelData(0);
+            const right = renderedBuffer.getChannelData(1);
+            const mp3Data = [];
+            
+            showCancelUI("Encoding MP3...");
+            for (let i = 0; i < left.length; i += 1152) {
+                if (isCancelled) return;
+                const lChunk = new Int16Array(1152), rChunk = new Int16Array(1152);
+                for(let j=0; j<1152 && (i+j)<left.length; j++) {
+                    const conv = f => { let s = Math.max(-1, Math.min(1, f)); return s < 0 ? s * 0x8000 : s * 0x7FFF; };
+                    lChunk[j] = conv(left[i+j]);
+                    rChunk[j] = conv(right[i+j]);
+                }
+                const buf = mp3encoder.encodeBuffer(lChunk, rChunk);
+                if (buf.length > 0) mp3Data.push(buf);
+            }
+            mp3Data.push(mp3encoder.flush());
+            setupDownload(new Blob(mp3Data, { type: 'audio/mp3' }), 'hasilmixing_trekbindernteste05.mp3');
+        } catch (e) { resetUI("Error: " + e.message); }
+        window.cancelProcess = () => { isCancelled = true; resetUI("Dibatalkan."); };
+    };
+    
+    function showCancelUI(msg) {
+        document.getElementById('status').innerHTML = `${msg} <button onclick="cancelProcess()" style="width:auto; padding:5px 10px; background:var(--accent); display:inline-block; border-radius:5px">Batal</button>`;
+    }
+    
+    function resetUI(msg) { document.getElementById('status').innerText = msg; }
+    
+    function setupDownload(blob, filename) {
+        const url = URL.createObjectURL(blob);
+        const btn = document.getElementById('btnDownload');
+        btn.disabled = false;
+        btn.onclick = () => { const a = document.createElement('a'); a.href = url; a.download = filename; a.click(); };
+        document.getElementById('status').innerText = "Siap diunduh!";
+    }
+    
+    function setupVisualizer() {
+        const canvas = document.getElementById('visualizer');
+        const ctx = canvas.getContext('2d');
+        const dataArray = new Uint8Array(analyser.frequencyBinCount);
+        function draw() {
+            if (audioCtx.state === 'closed') return;
+            requestAnimationFrame(draw);
+            analyser.getByteFrequencyData(dataArray);
+            ctx.fillStyle = '#0f172a';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            let x = 0;
+            for(let i = 0; i < dataArray.length; i++) {
+                let barHeight = dataArray[i]/2;
+                ctx.fillStyle = `rgb(79, 70, 229)`;
+                ctx.fillRect(x, canvas.height - barHeight, (canvas.width/dataArray.length)*2.5, barHeight);
+                x += (canvas.width/dataArray.length)*2.5 + 1;
+            }
+        }
+        draw();
+    }
+    
+    const sidebar = document.getElementById("mySidebar");
+    const overlaynav = document.getElementById("overlaynav");
+    
+    function openNav() {
+        sidebar.style.width = "280px";
+        overlaynav.style.display = "block";
+        document.body.style.overflow = "hidden";
+    }
+    
+    function closeNav() {
+        sidebar.style.width = "0";
+        overlaynav.style.display = "none";
+        // Mengembalikan scroll body
+        document.body.style.overflow = "auto";
+    }
+</script>
+<footer>
+    <p class="visually-hidden">TrekBinder: Aplikasi Layering mix Audio Browser-Based Terbaik, Cepat, dan Privat<br><br>Di era digital yang serba cepat, kolaborasi dan kreativitas musik tidak lagi harus dibatasi oleh perangkat lunak (software) yang berat atau proses instalasi yang rumit. Apakah Anda seorang musisi yang ingin menggabungkan vokal dengan instrumen? Atau seorang podcaster yang butuh menyatukan background music dengan suara rekaman? TrekBinder hadir sebagai solusi revolusioner untuk kebutuhan <strong>layering audio</strong> Anda.</p>
+    <p class="visually-hidden">Apa Itu TrekBinder?<br><strong>TrekBinder</strong> adalah aplikasi berbasis web yang dirancang khusus untuk menggabungkan berbagai trek audio—seperti instrumen, vokal, efek suara, dan lainnya—menjadi satu berkas utuh yang harmonis. Berbeda dengan aplikasi editing tradisional, TrekBinder menawarkan kemudahan akses langsung melalui browser Anda tanpa perlu mengunduh aplikasi tambahan (No Download).</p>
+    <p class="visually-hidden">Mengapa Memilih TrekBinder untuk Layering Audio?<br>1. Proses 100% di Browser (Client-Side Processing)<br>Saat Anda mengerjakan proyek, semua proses layering audio dilakukan sepenuhnya di sisi klien (browser Anda). Ini berarti aplikasi menggunakan daya komputasi perangkat Anda sendiri untuk memproses file, sehingga performanya sangat cepat dan tidak bergantung pada antrean server.<br>2. Privasi Terjamin: File Tidak Diupload ke Server<br>Dengan TrekBinder, file Anda tidak pernah diunggah ke server kami. Data audio tetap berada di memori lokal browser Anda selama proses penggabungan. Anda tidak perlu khawatir tentang kebocoran data atau hak cipta, karena kami tidak menyimpan satu bit pun dari karya Anda.<br>3. Tanpa Instalasi, Tanpa Ribet<br>Dengan TrekBinder, Anda cukup membuka browser, masukkan file, dan mulai berkreasi. Ini adalah solusi sempurna bagi mereka yang bekerja secara mobile atau menggunakan perangkat dengan spesifikasi terbatas.<br>4. Antarmuka yang Intuitif untuk Semua Level<br>TrekBinder dirancang dengan antarmuka yang ramah pengguna. Anda hanya perlu mengatur delay berbagai elemen seperti vokal, gitar, drum, atau synthesizer, untuk menciptakan harmoni yang sempurna. Hanya dengan beberapa klik, hasil layering audio Anda siap diunduh dalam format berkualitas tinggi.</p>
+    <p class="visually-hidden">Cara Kerja TrekBinder<br>Proses menggabungkan audio di TrekBinder sangatlah sederhana:<br>Buka TrekBinder di browser favorit Anda (Chrome, Firefox, Safari, atau Edge).<br>Impor File Audio: Masukkan instrumen, vokal, atau klip suara lainnya.<br>Atur Delay: Sesuaikan sinkronisasi antar trek.<br>Export: Gabungkan semua trek menjadi satu berkas audio final(WebM atau MP3). Proses ini instan karena dilakukan langsung di browser Anda.</p>
+    <p class="visually-hidden">Siapa yang Membutuhkan TrekBinder?<br>Musisi Independen: Untuk membuat demo lagu dengan menggabungkan rekaman vokal dan backing track.<br>Podcaster: Menambahkan musik intro, outro, dan efek suara ke dalam percakapan utama.<br>Content Creator: Mengedit audio untuk video media sosial dengan cepat sebelum tahap final editing.<br>Penggemar Karaoke: Menggabungkan suara nyanyian pribadi dengan file instrumen favorit.</p>
+    <p class="visually-hidden">TrekBinder adalah jawaban bagi Anda yang mencari <strong>alat audio mixer layering online</strong> yang cepat, gratis, dan sangat mengutamakan privasi. Dengan teknologi pemrosesan lokal di browser, Anda mendapatkan kecepatan maksimal tanpa mengorbankan keamanan file. Jadikan proses kreatif Anda lebih efisien dengan TrekBinder—tempat di mana vokal dan instrumen menyatu dengan sempurna dalam satu berkas.<br>Coba TrekBinder sekarang dan rasakan kemudahan mengolah audio langsung dari browser Anda!</p>
+    <p>&copy; 2026 <a style="color: inherit; text-decoration: none;" href="https://nteste05.github.io/trekbinder/">TrekBinder: Aplikasi Layering mix Audio Browser-Based Terbaik</a><br>All Rights Reserved.</p>
+</footer>
+</body>
+</html>
